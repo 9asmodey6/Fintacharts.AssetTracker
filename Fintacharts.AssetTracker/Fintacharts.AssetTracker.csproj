@@ -15,7 +15,6 @@
       <Folder Include="BackgroundServices\" />
       <Folder Include="Features\" />
       <Folder Include="Infrastructure\Cache\" />
-      <Folder Include="Infrastructure\Fintacharts\" />
       <Folder Include="Infrastructure\Persistence\" />
     </ItemGroup>
 
