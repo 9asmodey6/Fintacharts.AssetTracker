@@ -51,11 +51,4 @@ public class GetAssetsHandler(
                 i.Provider))
             .ToListAsync(ct);
     }
-
-    private static GetAssetsResponse MapToResponse(Instrument i) => new(
-        i.Id,
-        i.Symbol,
-        i.Description,
-        i.Kind,
-        i.Provider);
 }

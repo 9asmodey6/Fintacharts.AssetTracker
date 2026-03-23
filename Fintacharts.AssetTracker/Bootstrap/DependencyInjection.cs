@@ -1,6 +1,7 @@
 ﻿namespace Fintacharts.AssetTracker.Bootstrap;
 
 using Features.GetAssets;
+using Infrastructure.Cache;
 using Infrastructure.Fintacharts;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,17 @@ using Shared.Interfaces;
 
 public static partial class DependencyInjection
 {
+
+    public static IServiceCollection AddBasicServices(this IServiceCollection services)
+    {
+        services.AddSingleton<PriceCache>();
+
+        services.AddEndpointsApiExplorer();
+        services.AddSwaggerGen();
+        
+        return services;
+    }
+    
     public static IServiceCollection AddDatabaseServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddDbContext<AppDbContext>(opt =>

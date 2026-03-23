@@ -5,11 +5,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddEnvironmentVariables();
 
-builder.Services.AddEndpointsApiExplorer()
+builder.Services
+    .AddBasicServices()
     .AddDatabaseServices(builder.Configuration)
     .AddFintachartsServices(builder.Configuration)
-    .AddFeatureServices()
-    .AddSwaggerGen();
+    .AddFeatureServices();
 
 var app = builder.Build();
 
