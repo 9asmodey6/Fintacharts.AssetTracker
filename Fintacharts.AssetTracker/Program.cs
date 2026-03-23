@@ -1,4 +1,5 @@
 using Fintacharts.AssetTracker.Bootstrap;
+using Fintacharts.AssetTracker.Shared.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,8 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
+    app.ApplyMigrations();
+
     app.UseSwagger();
     app.UseSwaggerUI();
 }

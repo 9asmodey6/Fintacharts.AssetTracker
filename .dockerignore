@@ -1,0 +1,29 @@
+# IDE
+.idea/
+.vs/
+.vscode/
+
+# Build
+bin/
+obj/
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+Dockerfile
+
+# Rider caches
+*.sln.iml
+
+# NuGet
+*.nupkg
