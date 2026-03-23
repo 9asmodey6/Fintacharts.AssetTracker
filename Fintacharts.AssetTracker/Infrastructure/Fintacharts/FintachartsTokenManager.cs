@@ -1,15 +1,16 @@
 ﻿namespace Fintacharts.AssetTracker.Infrastructure.Fintacharts;
 
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.Options;
 
-public class FintachartsTokenManager(FintachartsOptions options, HttpClient client, ILogger<FintachartsTokenManager> logger)
+public class FintachartsTokenManager(IOptions<FintachartsOptions> options, HttpClient client, ILogger<FintachartsTokenManager> logger)
 {
     private string? _accessToken;
     private DateTime _expiresAt = DateTime.MinValue;
 
     private readonly SemaphoreSlim _lock = new(1, 1);
 
-    private async Task<string?> GetAccessTokenAsync(CancellationToken ct = default)
+    public async Task<string?> GetAccessTokenAsync(CancellationToken ct = default)
     {
         if (_accessToken is not null && DateTime.UtcNow < _expiresAt)
         {
@@ -39,18 +40,20 @@ public class FintachartsTokenManager(FintachartsOptions options, HttpClient clie
 
         var body = new FormUrlEncodedContent([
             new("grant_type", "password"),
-            new("client_id", options.ClientId),
-            new("username", options.Username),
-            new("password", options.Password)
+            new("client_id", options.Value.ClientId),
+            new("username", options.Value.Username),
+            new("password", options.Value.Password)
         ]);
         
-        var url = $"{options.BaseUrl}/identity/realms/{options.Realm}" +
+        var url = $"{options.Value.BaseUrl}/identity/realms/{options.Value.Realm}" +
                   $"/protocol/openid-connect/token";
         
         var response = await client.PostAsync(url, body, ct);
         response.EnsureSuccessStatusCode();
         
         var json = await response.Content.ReadFromJsonAsync<TokenResponse>(ct);
+        
+        _accessToken = json!.AccessToken;
         
         _expiresAt = DateTime.UtcNow.AddSeconds(json!.ExpiresIn - 300);
         
