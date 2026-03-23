@@ -3,7 +3,10 @@
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Options;
 
-public class FintachartsTokenManager(IOptions<FintachartsOptions> options, HttpClient client, ILogger<FintachartsTokenManager> logger)
+public class FintachartsTokenManager(
+    IOptions<FintachartsOptions> options,
+    HttpClient client,
+    ILogger<FintachartsTokenManager> logger)
 {
     private string? _accessToken;
     private DateTime _expiresAt = DateTime.MinValue;
@@ -44,24 +47,25 @@ public class FintachartsTokenManager(IOptions<FintachartsOptions> options, HttpC
             new("username", options.Value.Username),
             new("password", options.Value.Password)
         ]);
-        
-        var url = $"{options.Value.BaseUrl}/identity/realms/{options.Value.Realm}" +
-                  $"/protocol/openid-connect/token";
-        
+
+        var url = $"identity/realms/{options.Value.Realm}/protocol/openid-connect/token";
+
         var response = await client.PostAsync(url, body, ct);
         response.EnsureSuccessStatusCode();
-        
+
         var json = await response.Content.ReadFromJsonAsync<TokenResponse>(ct);
-        
+
         _accessToken = json!.AccessToken;
-        
+
         _expiresAt = DateTime.UtcNow.AddSeconds(json!.ExpiresIn - 300);
-        
+
         logger.LogInformation(
             "Token refreshed. Expires at {ExpiresAt}", _expiresAt);
     }
 }
 
 internal record TokenResponse(
-    [property: JsonPropertyName("access_token")] string AccessToken,
-    [property: JsonPropertyName("expires_in")] int ExpiresIn);
+    [property: JsonPropertyName("access_token")]
+    string AccessToken,
+    [property: JsonPropertyName("expires_in")]
+    int ExpiresIn);

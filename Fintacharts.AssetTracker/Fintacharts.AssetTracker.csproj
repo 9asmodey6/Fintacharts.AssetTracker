@@ -4,18 +4,25 @@
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <UserSecretsId>20e72d3e-3087-4b19-ba0a-372866114f13</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.25"/>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2"/>
+        <PackageReference Include="EFCore.NamingConventions" Version="8.*" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.25" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.*" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.*">
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+          <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.*" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
     </ItemGroup>
 
     <ItemGroup>
       <Folder Include="BackgroundServices\" />
       <Folder Include="Features\" />
       <Folder Include="Infrastructure\Cache\" />
-      <Folder Include="Infrastructure\Persistence\" />
     </ItemGroup>
 
 </Project>
