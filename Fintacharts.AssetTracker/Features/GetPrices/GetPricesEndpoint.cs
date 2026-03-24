@@ -10,7 +10,7 @@ public class GetPricesEndpoint : IEndpoint
     public static void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapGet("/api/prices", HandleAsync)
-            .WithValidation<GetPricesValidator>()
+            .WithValidation<GetPricesRequest>()
             .WithTags(EndpointTags.PricesTag)
             .WithSummary("Get current prices")
             .WithDescription(
