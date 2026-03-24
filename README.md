@@ -70,7 +70,7 @@ To ensure sub-millisecond response times:
 
 ### 2. Clone the repository
 ```bash
-git clone [https://github.com/9asmodey6/Fintacharts.AssetTracker.git](https://github.com/9asmodey6/Fintacharts.AssetTracker.git)
+git clone https://github.com/9asmodey6/Fintacharts.AssetTracker.git
 cd Fintacharts.AssetTracker
 ```
 
