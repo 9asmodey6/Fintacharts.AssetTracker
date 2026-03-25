@@ -63,6 +63,20 @@ To ensure sub-millisecond response times:
 - Docker / Docker Compose
 - Swagger (OpenAPI 3)
 ---
+## Logging
+
+- **Information level (Default):** Shows core system events (startup, instrument sync, socket status).
+- **Debug level:** Detailed price updates (ticks) are logged at the Debug level to avoid console noise. 
+
+To see real-time ticks in the console, change the logging level in `appsettings.json`:
+```bash
+"Logging": {
+    "LogLevel": {
+        "Default": "Debug"
+    }
+}
+```
+---
 ## 🚀 Getting Started
 
 ### 1. Prerequisites
