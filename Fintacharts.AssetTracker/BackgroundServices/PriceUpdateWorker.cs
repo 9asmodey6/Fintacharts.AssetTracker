@@ -46,11 +46,23 @@ public class PriceUpdateWorker : BackgroundService
 
     private void OnInstrumentsSynced(InstrumentsSyncedEvent evt)
     {
-        _logger.LogInformation("Event received! Updating IDs and forcing reconnect...");
-        _instrumentIds = evt.InstrumentIds.ToList();
+        var isChanged = evt.InstrumentIds.Count != _instrumentIds.Count ||
+                        evt.InstrumentIds.Except(_instrumentIds).Any();
 
-        _sessionCts?.Cancel();
+        if (isChanged)
+        {
+            _logger.LogInformation("IDs changed. Reconnecting...");
+            _instrumentIds = evt.InstrumentIds.ToList();
+            _sessionCts?.Cancel();
+            _logger.LogInformation("Instrument list changed. Reconnecting. New count: {Count}",
+                evt.InstrumentIds.Count);
+        }
+        else
+        {
+            _logger.LogInformation("Instruments list hasn't changed. Keeping current socket.");
+        }
     }
+
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
