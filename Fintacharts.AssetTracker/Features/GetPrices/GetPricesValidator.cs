@@ -1,7 +1,6 @@
 ﻿namespace Fintacharts.AssetTracker.Features.GetPrices;
 
 using FluentValidation;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 public class GetPricesValidator : AbstractValidator<GetPricesRequest>
 {

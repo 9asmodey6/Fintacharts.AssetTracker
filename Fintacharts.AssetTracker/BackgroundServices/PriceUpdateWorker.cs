@@ -46,23 +46,20 @@ public class PriceUpdateWorker : BackgroundService
 
     private void OnInstrumentsSynced(InstrumentsSyncedEvent evt)
     {
-        var isChanged = evt.InstrumentIds.Count != _instrumentIds.Count ||
-                        evt.InstrumentIds.Except(_instrumentIds).Any();
+        var incoming = new HashSet<string>(evt.InstrumentIds);
+        var current = new HashSet<string>(_instrumentIds);
 
-        if (isChanged)
+        if (incoming.SetEquals(current))
         {
-            _logger.LogInformation("IDs changed. Reconnecting...");
-            _instrumentIds = evt.InstrumentIds.ToList();
-            _sessionCts?.Cancel();
-            _logger.LogInformation("Instrument list changed. Reconnecting. New count: {Count}",
-                evt.InstrumentIds.Count);
+            _logger.LogInformation("Instruments unchanged. Keeping current socket.");
+            return;
         }
-        else
-        {
-            _logger.LogInformation("Instruments list hasn't changed. Keeping current socket.");
-        }
+
+        _logger.LogInformation(
+            "Instrument list changed. Reconnecting. New count: {Count}", evt.InstrumentIds.Count);
+        _instrumentIds = evt.InstrumentIds.ToList();
+        _sessionCts?.Cancel();
     }
-
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -195,7 +192,7 @@ public class PriceUpdateWorker : BackgroundService
 
             if (message?.Type != "l1-update") return;
 
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "Tick: {Symbol} | Bid: {Bid:0.####} | Ask: {Ask:0.####} | Last: {Last:0.####} | Time: {Time:HH:mm:ss.fff}",
                 message.InstrumentId,
                 message.Bid?.Price ?? 0,
