@@ -3,7 +3,9 @@
 A high-performance market data tracking service built with **.NET 8**. 
 The application synchronizes financial instruments from the Fintacharts platform, tracks real-time price updates via WebSockets, and provides historical data through REST.
 
+
 🚀 Project Guide: [Explore Project Documentation](https://www.mintlify.com/9asmodey6/Fintacharts.AssetTracker/introduction)
+
 
 > [!IMPORTANT]  
 > **Initialization Step:** After launching the application, you **must** call the `GET /api/assets` endpoint first. 
