@@ -6,12 +6,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
 
 builder.Services
-    .RegisterBasicServices()
+    .RegisterServices()
     .RegisterDatabase(builder.Configuration)
     .RegisterConfigurationOptions(builder.Configuration)
     .RegisterHttpClients(builder.Configuration)
-    .RegisterValidators()
-    .RegisterServices();
+    .RegisterValidators();
 
 var app = builder.Build();
 

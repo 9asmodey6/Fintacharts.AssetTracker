@@ -16,18 +16,6 @@ using Shared.Interfaces;
 
 public static partial class DependencyInjection
 {
-    public static IServiceCollection RegisterBasicServices(this IServiceCollection services)
-    {
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
-
-        services.AddSingleton<PriceCache>();
-
-        services.AddSingleton<IEventBus, InMemoryEventBus>();
-        
-        return services;
-    }
-
     public static IServiceCollection RegisterDatabase(
         this IServiceCollection services,
         IConfiguration configuration)
@@ -67,6 +55,14 @@ public static partial class DependencyInjection
 
     public static IServiceCollection RegisterServices(this IServiceCollection services)
     {
+        services.AddEndpointsApiExplorer();
+        services.AddSwaggerGen();
+
+        services.AddSingleton<PriceCache>();
+
+        services.AddSingleton<IEventBus, InMemoryEventBus>();
+
+
         services.AddScoped<GetAssetsHandler>();
 
         services.AddHostedService<PriceUpdateWorker>();
@@ -84,13 +80,13 @@ public static partial class DependencyInjection
         services.AddScoped<GetPricesHandler>();
 
         services.AddScoped<GetPriceHistoryHandler>();
-        
+
         return services;
     }
 
     [GenerateServiceRegistrations(AssignableTo = typeof(IEndpoint), CustomHandler = "MapEndpoint")]
     public static partial IEndpointRouteBuilder MapEndpointsGenerated(this IEndpointRouteBuilder endpoints);
-    
+
     [GenerateServiceRegistrations(AssignableTo = typeof(IValidator<>), Lifetime = ServiceLifetime.Scoped)]
     public static partial IServiceCollection RegisterValidators(this IServiceCollection services);
 }
