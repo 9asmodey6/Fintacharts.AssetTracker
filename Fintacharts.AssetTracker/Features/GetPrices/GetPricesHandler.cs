@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 public class GetPricesHandler(PriceCache cache, AppDbContext db)
 {
-    public async Task<GetPricesResponse> HandleAsync(string[]? ids, CancellationToken ct = default)
+    public async Task<GetPricesResponse> HandleAsync(Guid[]? ids, CancellationToken ct = default)
     {
         var items = ids != null && ids.Length > 0
             ? await GetSpecificPricesAsync(ids, ct)
@@ -16,30 +16,38 @@ public class GetPricesHandler(PriceCache cache, AppDbContext db)
         return new GetPricesResponse(items.ToArray());
     }
 
-    private async Task<List<GetPricesResponseItem>> GetSpecificPricesAsync(string[] ids, CancellationToken ct)
+    private async Task<List<GetPricesResponseItem>> GetSpecificPricesAsync(Guid[] ids, CancellationToken ct)
     {
         var result = new List<GetPricesResponseItem>();
-        var missingInCache = new List<string>();
+
+        var missingInCache = new Dictionary<string, Guid>();
 
         foreach (var id in ids)
         {
-            if (cache.TryGet(id, out var cached))
+            var stringId = id.ToString();
+            if (cache.TryGet(stringId, out var cached))
             {
                 result.Add(MapToResponse(id, cached));
             }
             else
             {
-                missingInCache.Add(id);
+                missingInCache.Add(stringId, id);
             }
         }
 
         if (missingInCache.Count > 0)
         {
+            var stringIds = missingInCache.Keys.ToList();
+
             var dbPrices = await db.AssetPrices
-                .Where(p => missingInCache.Contains(p.InstrumentId))
+                .Where(p => stringIds.Contains(p.InstrumentId))
                 .ToListAsync(ct);
 
-            result.AddRange(dbPrices.Select(p => MapToResponse(p.InstrumentId, p)));
+            foreach (var p in dbPrices)
+            {
+                var originalGuid = missingInCache[p.InstrumentId];
+                result.Add(MapToResponse(originalGuid, p));
+            }
         }
 
         return result;
@@ -48,26 +56,26 @@ public class GetPricesHandler(PriceCache cache, AppDbContext db)
     private async Task<List<GetPricesResponseItem>> GetAllPricesAsync(CancellationToken ct)
     {
         var result = cache.GetAll()
-            .Select(kvp => MapToResponse(kvp.Key, kvp.Value))
+            .Select(kvp => MapToResponse(Guid.Parse(kvp.Key), kvp.Value))
             .ToList();
 
         if (result.Count == 0)
         {
             var dbPrices = await db.AssetPrices.ToListAsync(ct);
-            result = dbPrices.Select(p => MapToResponse(p.InstrumentId, p)).ToList();
+            result = dbPrices.Select(p => MapToResponse(Guid.Parse(p.InstrumentId), p)).ToList();
         }
 
         return result;
     }
 
-    private static GetPricesResponseItem MapToResponse(string id, CachedPrice price) =>
+    private static GetPricesResponseItem MapToResponse(Guid id, CachedPrice price) =>
         new(id,
             price.Bid,
             price.Ask,
             price.Last,
             price.UpdatedAt);
-    
-    private static GetPricesResponseItem MapToResponse(string id, AssetPrice price) =>
+
+    private static GetPricesResponseItem MapToResponse(Guid id, AssetPrice price) =>
         new(id,
             price.Bid,
             price.Ask,

@@ -1,8 +1,6 @@
 ﻿namespace Fintacharts.AssetTracker.Infrastructure.Fintacharts;
 
 using System.Net.Http.Headers;
-using System.Text.Json.Serialization;
-using Models;
 using Models.BarModels;
 using Models.InstrumentModels;
 using Shared.Consts;

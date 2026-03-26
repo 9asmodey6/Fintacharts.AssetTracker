@@ -9,14 +9,14 @@ public class FintachartsTokenManager(
     HttpClient client,
     ILogger<FintachartsTokenManager> logger)
 {
-    private string? _accessToken;
+    private string _accessToken = string.Empty;
     private DateTime _expiresAt = DateTime.MinValue;
 
     private readonly SemaphoreSlim _lock = new(1, 1);
 
-    public async Task<string?> GetAccessTokenAsync(CancellationToken ct = default)
+    public async Task<string> GetAccessTokenAsync(CancellationToken ct = default)
     {
-        if (_accessToken is not null && DateTime.UtcNow < _expiresAt)
+        if (_accessToken != string.Empty && DateTime.UtcNow < _expiresAt)
         {
             return _accessToken;
         }
@@ -24,7 +24,7 @@ public class FintachartsTokenManager(
         await _lock.WaitAsync(ct);
         try
         {
-            if (_accessToken is not null && DateTime.UtcNow < _expiresAt)
+            if (_accessToken != string.Empty && DateTime.UtcNow < _expiresAt)
             {
                 return _accessToken;
             }
@@ -58,7 +58,7 @@ public class FintachartsTokenManager(
 
         _accessToken = json!.AccessToken;
 
-        _expiresAt = DateTime.UtcNow.AddSeconds(json!.ExpiresIn - 300);
+        _expiresAt = DateTime.UtcNow;
 
         logger.LogInformation(
             "Token refreshed. Expires at {ExpiresAt}", _expiresAt);

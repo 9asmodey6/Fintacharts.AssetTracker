@@ -6,11 +6,7 @@ public class GetPriceHistoryValidator : AbstractValidator<GetPriceHistoryRequest
 {
     public GetPriceHistoryValidator()
     {
-        RuleFor(x => x.id) 
-            .Must(id => Guid.TryParse(id, out _))
-            .WithMessage("Invalid ID format: '{PropertyValue}'. Expected GUID.");
-        
-        RuleFor(x => x.barsCount) 
+        RuleFor(x => x.barsCount)
             .GreaterThan(0)
             .WithMessage("Bars count must be greater than zero.")
             .LessThanOrEqualTo(100)

@@ -4,9 +4,9 @@ using Infrastructure.Fintacharts;
 
 public class GetPriceHistoryHandler(FintachartsRestClient restClient)
 {
-    public async Task<GetPriceHistoryResponse> HandleAsync(string id, int limit, CancellationToken ct)
+    public async Task<GetPriceHistoryResponse> HandleAsync(Guid id, int limit, CancellationToken ct)
     {
-        var bars = await restClient.GetPriceHistoryAsync(id, limit, ct);
+        var bars = await restClient.GetPriceHistoryAsync(id.ToString(), limit, ct);
         
         var items = bars
             .Select(b => new GetPriceHistoryItem(b.Timestamp, b.Close))
