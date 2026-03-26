@@ -55,15 +55,19 @@ public class GetPricesHandler(PriceCache cache, AppDbContext db)
 
     private async Task<List<GetPricesResponseItem>> GetAllPricesAsync(CancellationToken ct)
     {
-        var result = cache.GetAll()
+        var cached = cache.GetAll();
+        var cachedIds = cached.Keys.ToHashSet();
+
+        var result = cached
             .Select(kvp => MapToResponse(Guid.Parse(kvp.Key), kvp.Value))
             .ToList();
 
-        if (result.Count == 0)
-        {
-            var dbPrices = await db.AssetPrices.ToListAsync(ct);
-            result = dbPrices.Select(p => MapToResponse(Guid.Parse(p.InstrumentId), p)).ToList();
-        }
+        var dbPrices = await db.AssetPrices
+            .Where(p => !cachedIds.Contains(p.InstrumentId))
+            .ToListAsync(ct);
+
+        result.AddRange(dbPrices.Select(p =>
+            MapToResponse(Guid.Parse(p.InstrumentId), p)));
 
         return result;
     }

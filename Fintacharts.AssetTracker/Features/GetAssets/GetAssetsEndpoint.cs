@@ -8,16 +8,10 @@ public class GetAssetsEndpoint : IEndpoint
 {
     public static void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapGet("/api/assets", HandleAsync)
+        app.MapGet("/api/assets",
+                async (GetAssetsHandler handler, CancellationToken ct)
+                    => TypedResults.Ok(await handler.HandleAsync(ct)))
             .WithTags(EndpointTags.AssetTag)
             .WithSummary("Get all Assets");
-    }
-
-    private static async Task<Ok<GetAssetsResponse>> HandleAsync(
-        GetAssetsHandler handler,
-        CancellationToken ct)
-    {
-        var assets = await handler.HandleAsync(ct);
-        return TypedResults.Ok(assets);
     }
 }
