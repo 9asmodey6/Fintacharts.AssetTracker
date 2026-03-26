@@ -28,8 +28,3 @@ public class PriceCache
     }
 }
 
-public record CachedPrice(
-    decimal Bid,
-    decimal Ask,
-    decimal Last,
-    DateTime UpdatedAt);

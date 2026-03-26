@@ -2,6 +2,9 @@
 
 using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
+using Models;
+using Models.BarModels;
+using Models.InstrumentModels;
 using Shared.Consts;
 
 public class FintachartsRestClient(
@@ -55,22 +58,3 @@ public class FintachartsRestClient(
         return result?.Data ?? [];
     }
 }
-
-internal record InstrumentsResponse(
-    [property: JsonPropertyName("data")] List<InstrumentDto> Data);
-
-public record InstrumentDto(
-    [property: JsonPropertyName("id")] string Id,
-    [property: JsonPropertyName("symbol")] string Symbol,
-    [property: JsonPropertyName("description")] string Description,
-    [property: JsonPropertyName("kind")] string Kind,
-    [property: JsonPropertyName("mappings")] Dictionary<string, ProviderMapping> Mappings);
-
-public record ProviderMapping(
-    [property: JsonPropertyName("symbol")] string Symbol);
-    
-internal record BarsResponse([property: JsonPropertyName("data")] List<BarDto> Data);
-
-public record BarDto(
-    [property: JsonPropertyName("t")] DateTime Timestamp,
-    [property: JsonPropertyName("c")] decimal Close);

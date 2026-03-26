@@ -2,6 +2,7 @@
 
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Options;
+using Models;
 
 public class FintachartsTokenManager(
     IOptions<FintachartsOptions> options,
@@ -63,9 +64,3 @@ public class FintachartsTokenManager(
             "Token refreshed. Expires at {ExpiresAt}", _expiresAt);
     }
 }
-
-internal record TokenResponse(
-    [property: JsonPropertyName("access_token")]
-    string AccessToken,
-    [property: JsonPropertyName("expires_in")]
-    int ExpiresIn);

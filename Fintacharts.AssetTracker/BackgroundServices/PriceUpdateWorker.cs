@@ -10,6 +10,7 @@ using Infrastructure.Persistence;
 using Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Models;
 using Shared.Events;
 using Shared.Interfaces;
 
@@ -243,16 +244,3 @@ public class PriceUpdateWorker : BackgroundService
                                                        """, ct);
     }
 }
-
-internal record WsMessage(
-    [property: JsonPropertyName("type")] string? Type,
-    [property: JsonPropertyName("instrumentId")]
-    string? InstrumentId,
-    [property: JsonPropertyName("ask")] PriceData? Ask,
-    [property: JsonPropertyName("bid")] PriceData? Bid,
-    [property: JsonPropertyName("last")] PriceData? Last);
-
-internal record PriceData(
-    [property: JsonPropertyName("price")] decimal Price,
-    [property: JsonPropertyName("timestamp")]
-    DateTime Timestamp);
