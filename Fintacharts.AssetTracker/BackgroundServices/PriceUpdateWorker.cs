@@ -1,5 +1,6 @@
 ﻿namespace Fintacharts.AssetTracker.BackgroundServices;
 
+using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
@@ -11,11 +12,13 @@ using Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Models;
+using Shared.Consts;
 using Shared.Events;
 using Shared.Interfaces;
 
 public class PriceUpdateWorker : BackgroundService
 {
+    private readonly FintachartsRestClient _restClient;
     private readonly FintachartsTokenManager _tokenManager;
     private readonly PriceCache _cache;
     private readonly IServiceScopeFactory _scopeFactory;
@@ -25,9 +28,12 @@ public class PriceUpdateWorker : BackgroundService
 
     private volatile List<string> _instrumentIds = new();
 
+    private readonly ConcurrentDictionary<string, CachedPrice> _dbBuffer = new();
+    
     private CancellationTokenSource? _sessionCts;
 
     public PriceUpdateWorker(
+        FintachartsRestClient restClient,
         FintachartsTokenManager tokenManager,
         PriceCache cache,
         IServiceScopeFactory scopeFactory,
@@ -35,6 +41,7 @@ public class PriceUpdateWorker : BackgroundService
         ILogger<PriceUpdateWorker> logger,
         IEventBus eventBus)
     {
+        _restClient = restClient;
         _tokenManager = tokenManager;
         _cache = cache;
         _scopeFactory = scopeFactory;
@@ -66,6 +73,10 @@ public class PriceUpdateWorker : BackgroundService
     {
         _logger.LogInformation("PriceUpdateWorker starting...");
 
+        await SeedInstrumentsAsync(stoppingToken);
+        
+        _ = Task.Run(() => StartDatabaseFlushingAsync(stoppingToken), stoppingToken);
+        
         while (!stoppingToken.IsCancellationRequested)
         {
             using var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
@@ -212,7 +223,7 @@ public class PriceUpdateWorker : BackgroundService
 
             _cache.Set(message.InstrumentId!, price);
 
-            await SavePriceAsync(message.InstrumentId!, price, ct);
+            _dbBuffer[message.InstrumentId!] = price;
         }
         catch (Exception ex)
         {
@@ -242,5 +253,82 @@ public class PriceUpdateWorker : BackgroundService
                                                            last = EXCLUDED.last,
                                                            updated_at = EXCLUDED.updated_at
                                                        """, ct);
+    }
+
+    private async Task SeedInstrumentsAsync(
+        CancellationToken ct)
+    {
+        using (var scope = _scopeFactory.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            _logger.LogInformation("Syncing instruments from Fintacharts...");
+
+            var instruments = await _restClient.GetInstrumentsAsync(ct: ct);
+            var instrumentIds = instruments.Select(x => x.Id).ToList();
+
+            foreach (var i in instruments)
+            {
+                await dbContext.Database.ExecuteSqlInterpolatedAsync($"""
+                                                                      INSERT INTO instruments (id, symbol, description, kind, provider)
+                                                                      VALUES ({i.Id}, {i.Symbol}, {i.Description}, {i.Kind}, {FintachartsConstants.DefaultProvider})
+                                                                      ON CONFLICT (id) 
+                                                                      DO UPDATE SET
+                                                                          symbol = EXCLUDED.symbol,
+                                                                          description = EXCLUDED.description,
+                                                                          kind = EXCLUDED.kind,
+                                                                          provider = EXCLUDED.provider
+                                                                      """, ct);
+            }
+
+            _logger.LogInformation("Instruments synced successfully (Upserted {Count} items)", instruments.Count);
+        }
+    }
+
+    private async Task StartDatabaseFlushingAsync(CancellationToken ct)
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
+
+    try
+    {
+        while (await timer.WaitForNextTickAsync(ct))
+        {
+            if (_dbBuffer.IsEmpty) continue;
+            
+            var itemsToSave = _dbBuffer.ToArray();
+            _dbBuffer.Clear();
+
+            _logger.LogInformation("Flushing {Count} prices to database...", itemsToSave.Length);
+            
+            using var scope = _scopeFactory.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            foreach (var item in itemsToSave)
+            {
+                var instrumentId = item.Key;
+                var price = item.Value;
+                
+                var updatedAtUtc = price.UpdatedAt.Kind == DateTimeKind.Unspecified
+                    ? DateTime.SpecifyKind(price.UpdatedAt, DateTimeKind.Utc)
+                    : price.UpdatedAt.ToUniversalTime();
+                
+                await db.Database.ExecuteSqlInterpolatedAsync($"""
+                    INSERT INTO asset_prices (instrument_id, bid, ask, last, updated_at)
+                    VALUES ({instrumentId}, {price.Bid}, {price.Ask}, {price.Last}, {updatedAtUtc})
+                    ON CONFLICT (instrument_id)
+                    DO UPDATE SET
+                        bid = EXCLUDED.bid,
+                        ask = EXCLUDED.ask,
+                        last = EXCLUDED.last,
+                        updated_at = EXCLUDED.updated_at
+                    """, ct);
+            }
+        }
+    }
+    catch (OperationCanceledException) { /* Это нормально при выключении */ }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error during database flushing");
+    }
     }
 }
