@@ -4,6 +4,7 @@ using Infrastructure.Cache;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
+using Shared.Exceptions;
 
 public class GetPricesHandler(PriceCache cache, AppDbContext db)
 {
@@ -48,6 +49,13 @@ public class GetPricesHandler(PriceCache cache, AppDbContext db)
                 var originalGuid = missingInCache[p.InstrumentId];
                 result.Add(MapToResponse(originalGuid, p));
             }
+        }
+
+        if (result.Count < ids.Length)
+        {
+            var foundIds = result.Select(r => r.InstrumentId).ToHashSet();
+            var missingIds = ids.Where(id => !foundIds.Contains(id)).ToList();
+            throw new IncompleteBatchException("Unable to obtain a complete price list.", missingIds);
         }
 
         return result;

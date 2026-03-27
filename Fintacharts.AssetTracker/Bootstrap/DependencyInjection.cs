@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using ServiceScan.SourceGenerator;
 using Shared.Events;
+using Shared.Handlers;
 using Shared.Interfaces;
 
 public static partial class DependencyInjection
@@ -55,6 +56,9 @@ public static partial class DependencyInjection
 
     public static IServiceCollection RegisterServices(this IServiceCollection services)
     {
+        services.AddExceptionHandler<ApplicationExceptionHandler>();
+        services.AddProblemDetails();
+        
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
 

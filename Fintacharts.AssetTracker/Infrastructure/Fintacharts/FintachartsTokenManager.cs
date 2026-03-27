@@ -1,6 +1,5 @@
 ﻿namespace Fintacharts.AssetTracker.Infrastructure.Fintacharts;
 
-using System.Text.Json.Serialization;
 using Microsoft.Extensions.Options;
 using Models;
 
@@ -16,7 +15,7 @@ public class FintachartsTokenManager(
 
     public async Task<string> GetAccessTokenAsync(CancellationToken ct = default)
     {
-        if (_accessToken != string.Empty && DateTime.UtcNow < _expiresAt)
+        if (!string.IsNullOrEmpty(_accessToken) && DateTime.UtcNow < _expiresAt.AddMinutes(-5))
         {
             return _accessToken;
         }
@@ -24,7 +23,7 @@ public class FintachartsTokenManager(
         await _lock.WaitAsync(ct);
         try
         {
-            if (_accessToken != string.Empty && DateTime.UtcNow < _expiresAt)
+            if (!string.IsNullOrEmpty(_accessToken) && DateTime.UtcNow < _expiresAt.AddMinutes(-5))
             {
                 return _accessToken;
             }
@@ -56,9 +55,8 @@ public class FintachartsTokenManager(
 
         var json = await response.Content.ReadFromJsonAsync<TokenResponse>(ct);
 
+        _expiresAt = DateTime.UtcNow.AddSeconds(json!.ExpiresIn);
         _accessToken = json!.AccessToken;
-
-        _expiresAt = DateTime.UtcNow;
 
         logger.LogInformation(
             "Token refreshed. Expires at {ExpiresAt}", _expiresAt);

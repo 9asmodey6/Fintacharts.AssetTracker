@@ -15,21 +15,16 @@ public class GetPricesEndpoint : IEndpoint
             .WithSummary("Get current prices")
             .WithDescription(
                 "Returns current bid/ask/last prices for specific assets or all available assets if no IDs provided.")
-            .WithParameterDescription("ids", "Array of unique asset identifiers (GUIDs). Leave empty to get all prices.");
+            .WithParameterDescription("ids",
+                "Array of unique asset identifiers (GUIDs). Leave empty to get all prices.");
     }
 
-    public static async Task<Results<Ok<GetPricesResponse>, ValidationProblem, NotFound<string>>> HandleAsync(
+    public static async Task<Results<Ok<GetPricesResponse>, ValidationProblem, BadRequest>> HandleAsync(
         [AsParameters] GetPricesRequest request,
         GetPricesHandler handler,
         CancellationToken ct)
     {
-
         var result = await handler.HandleAsync(request.ids, ct);
-
-        if (request.ids != null && request.ids.Length > 0 && result.Prices.Length == 0)
-        {
-            return TypedResults.NotFound("Prices for requested assets were not found.");
-        }
 
         return TypedResults.Ok(result);
     }

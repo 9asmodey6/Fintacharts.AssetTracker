@@ -14,6 +14,8 @@ builder.Services
 
 var app = builder.Build();
 
+app.UseExceptionHandler(_ => { });
+
 app.ApplyMigrations();
 
 if (app.Environment.IsDevelopment())
