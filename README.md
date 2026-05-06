@@ -7,19 +7,18 @@ The application synchronizes financial instruments from the Fintacharts platform
 🚀 Project Guide: [Explore Project Documentation](https://www.mintlify.com/9asmodey6/Fintacharts.AssetTracker/introduction)
 
 
-> [!IMPORTANT]  
-> **Initialization Step:** After launching the application, you **must** call the `GET /api/assets` endpoint first. 
-> This seeds the local database with instruments and triggers the internal `EventBus`, which notifies the Background Service to start WebSocket subscriptions for the synchronized assets.
+> [!NOTE]  
+> The application is fully autonomous — on startup, `InstrumentSyncWorker` automatically fetches instruments from Fintacharts, seeds the database, and triggers WebSocket subscriptions. No manual initialization is required.
 ---
 ## 🌟 Key Architectural Features
 
 ### 1. Vertical Slice Architecture (VSA)
 Designed with maintainability in mind. Instead of traditional layers, the project is organized into self-contained slices: `GetAssets`, `GetPrices`, and `GetPriceHistory`. This reduces cognitive load and coupling.
 
-### 2. Reactive Event-Driven Engine
-Implemented a custom **InMemory Event Bus** to orchestrate background tasks:
-- **Event Flow:** `GetAssets` (Feature) -> `InstrumentsSyncedEvent` -> `PriceUpdateWorker` (Background Service).
-- **Reactive Reconnection:** The worker uses a `CancellationTokenSource` session management. When new assets are synced, it gracefully cancels the existing WebSocket session and immediately establishes a new one with updated subscriptions—**without restarting the application**.
+### 2. Background Sync & Reactive Reconnection
+Two dedicated Background Services handle instrument lifecycle and real-time data:
+- **`InstrumentSyncWorker`:** Automatically syncs instruments from Fintacharts on startup and every 60 seconds. Detects changes in the instrument set and notifies `PriceUpdateWorker` via a lightweight `InstrumentSyncNotifier` (CancellationToken-based signaling).
+- **`PriceUpdateWorker`:** Manages the WebSocket connection to Fintacharts. Uses `LinkedCancellationTokenSource` for graceful session management — when `InstrumentSyncWorker` detects new instruments, the existing WebSocket session is cancelled and a new one is established with updated subscriptions, **without restarting the application**.
 
 ### 3. High-Performance Caching
 To ensure sub-millisecond response times:
@@ -32,30 +31,34 @@ To ensure sub-millisecond response times:
 ---
 ## Architecture Overview
 
-             ┌──────────────┐
-             │   Swagger    │
-             │   Client     │
-             └──────┬───────┘
-                    │
-                    ▼
-           GET /api/assets
-                    │
-                    ▼
-           GetAssets Feature
-                    │
-                    ▼
-         InstrumentsSyncedEvent
-                    │
-                    ▼
-           PriceUpdateWorker
-                    │
-            WebSocket (Fintacharts)
-                    │
-                    ▼
-           Real-time price updates
-              │             │
-              ▼             ▼
-         PriceCache     PostgreSQL
+         ┌──────────────┐
+         │   Swagger /   │
+         │   Frontend    │
+         └──────┬───────┘
+                │
+                ▼
+       GET /api/assets (read-only)
+       GET /api/prices
+       GET /api/assets/{id}/history
+
+     ┌─────────────────────────┐
+     │  InstrumentSyncWorker   │
+     │  (sync every 60s)       │
+     └──────────┬──────────────┘
+                │ instruments changed?
+                ▼
+      InstrumentSyncNotifier
+                │
+                ▼
+         PriceUpdateWorker
+                │
+        WebSocket (Fintacharts)
+                │
+                ▼
+       Real-time price updates
+          │             │
+          ▼             ▼
+     PriceCache     PostgreSQL
 ---
 ## 🛠 Tech Stack
 
@@ -112,8 +115,10 @@ docker-compose up --build
 ```
 ### 5. Usage flow
 1. Open Swagger UI: **http://localhost:8080/swagger**
-2. Execute GET `/api/assets` to fetch instruments and start the tracking engine.
-3. Use GET `/api/prices` to see live updates.
-4. Watch the application logs for live WebSocket Ticks.
+2. Instruments are synced automatically on startup — no manual action needed.
+3. Use GET `/api/assets` to see all available instruments.
+4. Use GET `/api/prices` to see live price updates.
+5. Use GET `/api/assets/{id}/history?barsCount=10` to see historical prices.
+6. Watch the application logs for live WebSocket Ticks.
 
 *Note: This project was developed as part of a technical assessment for a .NET Backend Developer position.*

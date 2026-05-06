@@ -1,4 +1,4 @@
-﻿namespace Fintacharts.AssetTracker.Bootstrap;
+namespace Fintacharts.AssetTracker.Bootstrap;
 
 using BackgroundServices;
 using Features.GetAssets;
@@ -11,9 +11,9 @@ using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using ServiceScan.SourceGenerator;
-using Shared.Events;
 using Shared.Handlers;
 using Shared.Interfaces;
+using Shared.Services;
 
 public static partial class DependencyInjection
 {
@@ -64,11 +64,11 @@ public static partial class DependencyInjection
 
         services.AddSingleton<PriceCache>();
 
-        services.AddSingleton<IEventBus, InMemoryEventBus>();
-
+        services.AddSingleton<InstrumentSyncNotifier>();
 
         services.AddScoped<GetAssetsHandler>();
 
+        services.AddHostedService<InstrumentSyncWorker>();
         services.AddHostedService<PriceUpdateWorker>();
 
         services.AddSingleton<FintachartsTokenManager>(sp =>
