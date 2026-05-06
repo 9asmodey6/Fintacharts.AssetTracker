@@ -9,6 +9,7 @@ builder.Services
     .RegisterServices()
     .RegisterDatabase(builder.Configuration)
     .RegisterConfigurationOptions(builder.Configuration)
+    .ConfigureCors()
     .RegisterHttpClients(builder.Configuration)
     .RegisterValidators();
 
@@ -24,8 +25,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseHttpsRedirection();
 
 app.MapEndpointsGenerated();
 
