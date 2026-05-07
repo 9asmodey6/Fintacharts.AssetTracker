@@ -628,12 +628,22 @@ body {
 
 .price-details {
     display: flex;
-    gap: 24px;
-    font-size: 14px;
+    gap: 32px;
+    align-items: center;
 }
 
 .price-details .label {
     color: var(--text-muted);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-right: 6px;
+}
+
+.price-details .price-value {
+    font-size: 22px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
 }
 
 .chart-section {
