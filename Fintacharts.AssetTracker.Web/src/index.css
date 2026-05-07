@@ -492,18 +492,50 @@ body {
     align-items: center;
     justify-content: center;
     min-height: 40vh;
-    gap: 12px;
-}
-
-.error-icon {
-    font-size: 36px;
+    padding: 24px;
 }
 
 .error-message {
-    color: var(--red);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: var(--radius-lg);
+    padding: 24px 32px;
+    max-width: 600px;
+    width: 100%;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.error-icon {
+    font-size: 32px;
+    flex-shrink: 0;
+}
+
+.error-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.error-content strong {
+    color: #ef4444;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.error-content span {
+    color: var(--text-secondary);
     font-size: 14px;
-    max-width: 400px;
-    text-align: center;
+    line-height: 1.5;
 }
 
 /* ===== Clickable Row ===== */

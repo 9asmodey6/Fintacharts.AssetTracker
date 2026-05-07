@@ -135,7 +135,13 @@ export function AssetDetailPage({ prices }: AssetDetailPageProps) {
                             <div className="spinner" />
                         </div>
                     ) : error ? (
-                        <div className="error-message">Failed to load chart: {error}</div>
+                        <div className="error-message">
+                            <div className="error-icon">⚠️</div>
+                            <div className="error-content">
+                                <strong>Data Unavailable</strong>
+                                <span>{error}</span>
+                            </div>
+                        </div>
                     ) : (
                         <ResponsiveContainer width="100%" height={300}>
                             <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>

@@ -53,8 +53,13 @@ function App() {
                     </div>
                 ) : error ? (
                     <div className="error-container">
-                        <div className="error-icon">⚠️</div>
-                        <div className="error-message">{error}</div>
+                        <div className="error-message">
+                            <div className="error-icon">⚠️</div>
+                            <div className="error-content">
+                                <strong>System Error</strong>
+                                <span>{error}</span>
+                            </div>
+                        </div>
                     </div>
                 ) : (
                     <Routes>
