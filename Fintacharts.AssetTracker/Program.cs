@@ -1,5 +1,6 @@
 using Fintacharts.AssetTracker.Bootstrap;
 using Fintacharts.AssetTracker.Shared.Extensions;
+using Fintacharts.AssetTracker.Infrastructure.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +27,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors();
+app.MapHub<PriceHub>("/hubs/prices");
 app.MapEndpointsGenerated();
 
 app.Run();

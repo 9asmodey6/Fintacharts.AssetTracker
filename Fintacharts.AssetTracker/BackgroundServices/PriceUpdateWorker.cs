@@ -9,6 +9,8 @@ using Infrastructure.Fintacharts;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.SignalR;
+using Infrastructure.Hubs;
 using Models;
 using Shared.Services;
 
@@ -18,6 +20,7 @@ public class PriceUpdateWorker(
     IServiceScopeFactory scopeFactory,
     IOptions<FintachartsOptions> options,
     InstrumentSyncNotifier notifier,
+    IHubContext<PriceHub> hubContext,
     ILogger<PriceUpdateWorker> logger) : BackgroundService
 {
     private readonly ConcurrentDictionary<string, CachedPrice> _dbBuffer = new();
@@ -140,11 +143,11 @@ public class PriceUpdateWorker(
             var json = Encoding.UTF8.GetString(ms.ToArray());
             ms.SetLength(0);
 
-            ProcessMessage(json);
+            await ProcessMessageAsync(json, ct);
         }
     }
 
-    private void ProcessMessage(string json)
+    private async Task ProcessMessageAsync(string json, CancellationToken ct)
     {
         try
         {
@@ -172,6 +175,16 @@ public class PriceUpdateWorker(
             cache.Set(message.InstrumentId!, price);
 
             _dbBuffer[message.InstrumentId!] = price;
+
+            // Sending updated price on front-end via SignalR
+            await hubContext.Clients.All.SendAsync("PriceUpdated", new
+            {
+                InstrumentId = message.InstrumentId,
+                Bid = price.Bid,
+                Ask = price.Ask,
+                Last = price.Last,
+                UpdatedAt = price.UpdatedAt
+            }, ct);
         }
         catch (Exception ex)
         {

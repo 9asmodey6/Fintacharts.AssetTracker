@@ -8,12 +8,14 @@ using FluentValidation;
 using Infrastructure.Cache;
 using Infrastructure.Fintacharts;
 using Infrastructure.Persistence;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using ServiceScan.SourceGenerator;
 using Shared.Handlers;
 using Shared.Interfaces;
 using Shared.Services;
+using System.Text.Json;
 
 public static partial class DependencyInjection
 {
@@ -45,7 +47,7 @@ public static partial class DependencyInjection
         {
             options.AddDefaultPolicy(policy =>
             {
-                policy.WithOrigins("http://localhost:3000")
+                policy.WithOrigins("http://localhost:5173")
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();
@@ -82,6 +84,12 @@ public static partial class DependencyInjection
         services.AddSingleton<PriceCache>();
 
         services.AddSingleton<InstrumentSyncNotifier>();
+
+        services.AddSignalR()
+            .AddJsonProtocol(options =>
+            {
+                options.PayloadSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            });
 
         services.AddScoped<GetAssetsHandler>();
 
