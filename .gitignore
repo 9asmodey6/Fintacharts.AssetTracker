@@ -480,3 +480,41 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Local env files
+.env
+.env*.local
+
+# Logs
+npm-debug.log*
+yarn-error.log*

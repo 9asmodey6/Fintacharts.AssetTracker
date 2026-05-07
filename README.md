@@ -3,8 +3,21 @@
 A high-performance market data tracking service built with **.NET 8**. 
 The application synchronizes financial instruments from the Fintacharts platform, tracks real-time price updates via WebSockets, and provides historical data through REST.
 
+To demonstrate the project's capabilities, a full-featured frontend has been implemented using **React, Vite, and TypeScript**, featuring a two-page setup for live tracking and historical charting.
 
 🚀 Project Guide: [Explore Project Documentation](https://www.mintlify.com/9asmodey6/Fintacharts.AssetTracker/introduction)
+
+<p align="center">
+  <img src="docs/demo.gif" width="100%" alt="Demo">
+</p>
+
+<details>
+  <summary>Click here to see screenshots</summary>
+
+  | Dashboard Page | Asset Detail Page |
+  | :---: | :---: |
+  | <img src="docs/dashboard.png" width="400"> | <img src="docs/detail_page.png" width="400"> |
+</details>
 
 
 > [!NOTE]  
@@ -114,11 +127,10 @@ The application requires a `.env` file to handle secrets and connection strings.
 docker-compose up --build
 ```
 ### 5. Usage flow
-1. Open Swagger UI: **http://localhost:8080/swagger**
-2. Instruments are synced automatically on startup — no manual action needed.
-3. Use GET `/api/assets` to see all available instruments.
-4. Use GET `/api/prices` to see live price updates.
-5. Use GET `/api/assets/{id}/history?barsCount=10` to see historical prices.
-6. Watch the application logs for live WebSocket Ticks.
+1. **Open the Web UI:** Go to **http://localhost:5173** to see the live React dashboard.
+2. **Explore the API:** Open the Swagger UI at **http://localhost:8080/swagger**.
+3. Instruments are synced automatically on startup — no manual action needed.
+4. Watch the application logs (`docker-compose logs -f`) for live WebSocket Ticks.
 
-*Note: This project was developed as part of a technical assessment for a .NET Backend Developer position.*
+> [!WARNING]
+> The Fintacharts API credentials are **NOT** provided in this repository due to security reasons and company privacy policies. This project was developed purely to demonstrate full-stack skills (.NET Backend & React Frontend) as part of a technical assessment.

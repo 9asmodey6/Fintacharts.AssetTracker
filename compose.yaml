@@ -1,4 +1,4 @@
-﻿services:
+services:
   postgres:
     image: postgres:16
     container_name: asset-tracker-postgres
@@ -36,6 +36,18 @@
        - Fintacharts__ClientId=${FINTA_CLIENT_ID}
     ports:
       - "8080:8080"
+
+  web:
+    build:
+      context: ./Fintacharts.AssetTracker.Web
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:8080
+    container_name: asset-tracker-web
+    depends_on:
+      - api
+    ports:
+      - "5173:80"
 
 volumes:
   postgres-data:
